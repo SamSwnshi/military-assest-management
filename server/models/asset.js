@@ -20,7 +20,11 @@ const assetSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-
+    baseId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Base",
+      required: [true, "Base assignment is required"],
+    },
     status: {
       type: String,
       enum: [
