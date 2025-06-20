@@ -20,9 +20,9 @@ const userSchema = new mongoose.Schema(
     baseId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Base",
-      // required: function () {
-      //   return this.role === "admin";
-      // },
+      required: function () {
+        return this.role === "admin";
+      },
     },
     role: {
       type: String,

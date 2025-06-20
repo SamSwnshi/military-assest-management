@@ -62,7 +62,8 @@ export const Logout = async (req, res) => {
 
 export const Register = async (req, res) => {
   try {
-    const { username, email, password, firstName, lastName, role } = req.body;
+    const { username, email, password, firstName, lastName, role, baseId } =
+      req.body;
 
     if (!username || !email || !password || !firstName | !lastName || !role) {
       return res.status(400).json({
@@ -84,6 +85,7 @@ export const Register = async (req, res) => {
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
+
     const newUser = new User({
       username,
       email,
@@ -91,9 +93,9 @@ export const Register = async (req, res) => {
       firstName,
       lastName,
       role,
-      //   baseId
+      baseId: role === "admin" ? baseId : undefined,
     });
-    const savedUser = newUser.save();
+    const savedUser = await newUser.save();
 
     return res.status(201).json({
       message: "User registered successfully",
@@ -104,7 +106,7 @@ export const Register = async (req, res) => {
         role: savedUser.role,
         firstName: savedUser.firstName,
         lastName: savedUser.lastName,
-        // baseId: savedUser.baseId || null,
+        baseId: savedUser.baseId || null,
       },
       error: false,
       success: true,
