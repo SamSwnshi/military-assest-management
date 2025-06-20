@@ -21,14 +21,29 @@ const userSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Base",
       required: function () {
-        return this.role !== "admin";
+        return this.role !== "baseCommander";
       },
     },
     role: {
       type: String,
-      enum: ["admin", "base_commander", "logistics_officer"],
-      default: "logistics_officer",
+      enum: ["admin", "baseCommander", "logisticsOfficer"],
+      default: "logisticsOfficer",
     },
+    firstname: {
+      type: String,
+      required: [true,"First name is required"]
+    },
+    lastname: {
+      type: String,
+      required: [true,"Last name is required"]
+    },
+    lastLogin: {
+      type: Date
+    },
+    isActive: {
+      type: Boolean,
+      default: true
+    }
   },
   { timestamps: true }
 );
