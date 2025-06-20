@@ -20,9 +20,9 @@ const userSchema = new mongoose.Schema(
     baseId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Base",
-      required: function () {
-        return this.role !== "baseCommander";
-      },
+      // required: function () {
+      //   return this.role === "admin";
+      // },
     },
     role: {
       type: String,
@@ -30,11 +30,11 @@ const userSchema = new mongoose.Schema(
       default: "logisticsOfficer",
       required: true
     },
-    firstname: {
+    firstName: {
       type: String,
       required: [true,"First name is required"]
     },
-    lastname: {
+    lastName: {
       type: String,
       required: [true,"Last name is required"]
     },
