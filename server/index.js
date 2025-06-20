@@ -4,7 +4,8 @@ import dotenv from "dotenv";
 import config from "./db/config.js";
 import authRoutes from './routes/auth.routes.js';
 import assetRoutes from "./routes/asset.routes.js";
-import baseRoutes from './routes/base.routes.js'
+import baseRoutes from './routes/base.routes.js';
+import transferRoutes from './routes/transfer.routes.js'
 dotenv.config();
 
 const app = express();
@@ -14,6 +15,7 @@ app.use(express.json());
 app.use('/api',authRoutes)
 app.use('/api/assets',assetRoutes)
 app.use('/api/base',baseRoutes)
+app.use('/api/transfer',transferRoutes)
 
 app.listen(port, () => {
   console.log(`Server is Running in Port: ${port}`);

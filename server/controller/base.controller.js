@@ -26,6 +26,7 @@ export const getBaseById = async (req, res) => {
 export const createBase = async (req, res) => {
   try {
     const userRole = req.user?.role;
+    console.log(userRole)
 
     if (userRole !== "admin" && userRole !== "baseCommander") {
       return res
