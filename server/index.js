@@ -9,6 +9,7 @@ import transferRoutes from './routes/transfer.routes.js';
 import purchaseRoutes from './routes/purchase.routes.js';
 import expendituresRoutes from "./routes/expenditure.routes.js"
 import assignmnetRoutes from './routes/assignmnet.routes.js'
+import dashboardRoutes from './routes/dashboard.routes.js'
 dotenv.config();
 
 const app = express();
@@ -22,6 +23,7 @@ app.use('/api/transfer',transferRoutes)
 app.use('/api/purchase',purchaseRoutes)
 app.use('/api/expenditures',expendituresRoutes)
 app.use("/api/assignmnet",assignmnetRoutes)
+app.use('/api/dashboard',dashboardRoutes)
 
 app.listen(port, () => {
   console.log(`Server is Running in Port: ${port}`);
