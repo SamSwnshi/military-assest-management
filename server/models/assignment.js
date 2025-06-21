@@ -1,7 +1,35 @@
 import mongoose from "mongoose";
 
-const assetSchema = new mongoose.Schema({},{timestamps: true});
+const assignmnetSchema = new mongoose.Schema(
+  {
+    assetId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Asset",
+      required: true,
+    },
+    personnelName: {
+      type: String,
+      required: true,
+    },
+    quantity: {
+      type: Number,
+      required: true,
+    },
+    baseId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Base",
+      required: true,
+    },
+    assignedDate: {
+      type: Date,
+      default: Date.now,
+    },
+  },
+  { timestamps: true }
+);
 
-const Asset  = mongoose.model("Asset",assetSchema);
+const Assignment = mongoose.model("Assignment", assignmnetSchema);
 
-export default Asset;
+export default Assignment;
+
+
