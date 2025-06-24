@@ -1,7 +1,7 @@
 import Asset from '../models/asset.js'
 export const getAllAssets = async(req,res)=> {
    try {
-    const assets = await Asset.find();
+    const assets = await Asset.find().populate("baseId", "name");
     res.status(200).json(assets);
   } catch (error) {
     res.status(500).json({ message: 'Failed to fetch assets', error: error.message });

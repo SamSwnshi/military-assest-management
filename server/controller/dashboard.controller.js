@@ -2,25 +2,50 @@ import Asset from "../models/asset.js";
 import Purchase from "../models/purchase.js";
 import Transfer from "../models/transfer.js";
 import Assignment from "../models/assignment.js";
+import Expenditure from "../models/expenditure.js";
 
 export const getMetrics = async (req, res) => {
   try {
-    const [totalAssets, totalPurchases, activeTransfers, totalAssignments] = await Promise.all([
-      Asset.countDocuments(),
-      Purchase.countDocuments(),
-      Transfer.countDocuments({ status: "pending" }),
-      Assignment.countDocuments()
+    const { baseId, dateRange } = req.query;
+    const [startDate, endDate] = dateRange || [null, null];
+
+    const filters = {};
+    if (baseId) {
+      filters.baseId = baseId;
+    }
+
+    const dateFilter = {};
+    if (startDate) {
+      dateFilter.createdAt = { ...dateFilter.createdAt, $gte: new Date(startDate) };
+    }
+    if (endDate) {
+      dateFilter.createdAt = { ...dateFilter.createdAt, $lte: new Date(endDate) };
+    }
+
+    const assetFilters = { ...filters };
+    if (dateFilter.createdAt) {
+      assetFilters.createdAt = dateFilter.createdAt;
+    }
+
+    let transferFilter = { status: "pending", ...dateFilter };
+    if (baseId) {
+      transferFilter.fromBaseId = baseId;
+    }
+
+    const [totalAssets, totalPurchases, activeTransfers, totalAssignments, expendedAssets] = await Promise.all([
+      Asset.countDocuments(assetFilters),
+      Purchase.countDocuments({ ...filters, ...dateFilter }),
+      Transfer.countDocuments(transferFilter),
+      Assignment.countDocuments({ ...filters, ...dateFilter }),
+      Expenditure.countDocuments({ ...filters, ...dateFilter })
     ]);
 
     res.status(200).json({
-      success: true,
-      message: "Dashboard metrics fetched successfully",
-      data: {
-        totalAssets,
-        totalPurchases,
-        activeTransfers,
-        assignedAssets: totalAssignments,
-      },
+      totalAssets,
+      totalPurchases,
+      activeTransfers,
+      assignedAssets: totalAssignments,
+      expendedAssets
     });
   } catch (error) {
     console.error("Error fetching metrics:", error);

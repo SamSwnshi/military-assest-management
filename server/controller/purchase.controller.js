@@ -23,14 +23,15 @@ export const getPurchaseById = async (req, res) => {
 export const createPurchase = async (req, res) => {
   try {
     const { assetId, baseId, quantity, unitPrice } = req.body;
-    const totalAmount = quantity * unitPrice;
+    const totalCost = quantity * unitPrice;
 
     const purchase = new Purchase({
       assetId,
       baseId,
       quantity,
       unitPrice,
-      totalAmount
+      totalCost,
+      status: "delivered"
     });
 
     await purchase.save();

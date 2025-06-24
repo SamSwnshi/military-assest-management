@@ -21,15 +21,20 @@ const purchaseSchema = new mongoose.Schema({
     required: [true, 'Unit price is required'],
     min: [0, 'Unit price cannot be negative']
   },
-  totalAmount: {
+  totalCost: {
     type: Number,
-    required: [true, 'Total amount is required'],
-    min: [0, 'Total amount cannot be negative']
+    required: [true, 'Total cost is required'],
+    min: [0, 'Total cost cannot be negative']
   },
   purchaseDate: {
     type: Date,
     required: [true, 'Purchase date is required'],
     default: Date.now
+  },
+  status: {
+    type: String,
+    enum: ["pending", "approved", "delivered"],
+    default: "delivered"
   }
 },{timestamps: true});
 

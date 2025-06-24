@@ -19,6 +19,7 @@ export const getAllTransfer = async (req, res) => {
 
 export const createTransfer = async (req, res) => {
   try {
+    console.log('Transfer request body:', req.body);
     const { assetId, fromBaseId, toBaseId, quantity, transferredBy, notes } =
       req.body;
 
@@ -56,6 +57,7 @@ export const createTransfer = async (req, res) => {
 
     res.status(201).json({ message: "Transfer created", data: transfer });
   } catch (error) {
+    console.error('Error in createTransfer:', error);
     res
       .status(500)
       .json({ message: "Transfer creation failed", error: error.message });

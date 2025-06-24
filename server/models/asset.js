@@ -40,6 +40,11 @@ const assetSchema = new mongoose.Schema(
     openingBalance: { type: Number, default: 0 },
     closingBalance: { type: Number, default: 0 },
     netMovement: { type: Number, default: 0 },
+    unitPrice: {
+      type: Number,
+      required: [true, "Unit price is required"],
+      min: [0, "Unit price cannot be negative"]
+    },
   },
   { timestamps: true }
 );

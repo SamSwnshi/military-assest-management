@@ -5,18 +5,20 @@ import Base from "../models/base.models.js";
 
 export const Login = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { username, email, password } = req.body;
 
-    if (!email || !password) {
+    if (!(username || email) || !password) {
       return res.status(400).json({
-        message: "Please provide email and password",
+        message: "Please provide username/email and password",
       });
     }
 
-    const user = await User.findOne({ email });
+    const user = await User.findOne({
+      $or: [{ email }, { username }],
+    });
     if (!user) {
       return res.status(400).json({
-        message: "User not register",
+        message: "User not registered",
       });
     }
     const checkPassword = await bcrypt.compare(password, user.password);
@@ -128,6 +130,10 @@ export const Register = async (req, res) => {
       return res.status(400).json({ message: "Provide all required fields!" });
     }
 
+    if (role === 'admin') {
+      return res.status(403).json({ message: "Admin registration is not allowed" });
+    }
+
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ message: "Email already registered" });
@@ -183,5 +189,35 @@ export const Register = async (req, res) => {
       error: true,
       success: false,
     });
+  }
+};
+
+export const getProfile = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id).select('-password');
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    res.status(200).json({ user });
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to fetch profile', error: error.message });
+  }
+};
+
+export const updateProfile = async (req, res) => {
+  try {
+    const { firstName, lastName, email } = req.body;
+    const user = await User.findByIdAndUpdate(
+      req.user.userId,
+      { firstName, lastName, email },
+      { new: true, runValidators: true }
+    ).select('-password');
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    res.status(200).json({ message: 'Profile updated successfully', user });
+  } catch (error) {
+    res.status(400).json({ message: 'Failed to update profile', error: error.message });
   }
 };
