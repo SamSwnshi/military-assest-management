@@ -9,7 +9,6 @@ import {
   Users, 
   FileText, 
   Shield, 
-  Settings,
   X,
   LogOut
 } from 'lucide-react';
