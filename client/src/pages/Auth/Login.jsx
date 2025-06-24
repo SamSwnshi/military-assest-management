@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
-// import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from '../../contexts/AuthContext.jsx';
 import { Shield, Eye, EyeOff } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const Login = () => {
-//   const { login } = useAuth();
+  const { login } = useAuth();
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -20,7 +20,14 @@ const Login = () => {
   const onSubmit = async (data) => {
     try {
       setIsLoading(true);
-      const result = await login(data);
+      const { username, password } = data;
+      const isEmail = username.includes('@');
+
+      const credentials = {
+        password,
+        ...(isEmail ? { email: username } : { username })
+      };
+      const result = await login(credentials);
       
       if (result.success) {
         toast.success('Login successful!');
@@ -116,8 +123,6 @@ const Login = () => {
                 </p>
               )}
             </div>
-
-
 
             {/* Submit Button */}
             <div>

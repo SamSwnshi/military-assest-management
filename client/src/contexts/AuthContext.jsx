@@ -4,7 +4,7 @@ import { authAPI } from '../services/api';
 const AuthContext = createContext();
 
 const initialState = {
-  user: JSON.parse(localStorage.getItem('user')) || null,
+  user: null,
   token: localStorage.getItem('token'),
   isAuthenticated: !!localStorage.getItem('token'),
   loading: true,
@@ -70,59 +70,28 @@ const authReducer = (state, action) => {
 export const AuthProvider = ({ children }) => {
   const [state, dispatch] = useReducer(authReducer, initialState);
 
-  // Check if user is authenticated on app load
   useEffect(() => {
-    const checkAuth = async () => {
+    const validateTokenAndFetchUser = async () => {
       const token = localStorage.getItem('token');
-      const storedUser = localStorage.getItem('user');
-      
       if (token) {
         try {
           dispatch({ type: 'AUTH_START' });
-          
-          // If we have stored user data, use it immediately for faster loading
-          if (storedUser) {
-            const user = JSON.parse(storedUser);
-            dispatch({
-              type: 'AUTH_SUCCESS',
-              payload: {
-                user,
-                token
-              }
-            });
-          }
-          
-          // Then validate the token by fetching fresh user data
           const response = await authAPI.getProfile();
-          const freshUser = response.data.user;
-          
-          // Update localStorage with fresh user data
-          localStorage.setItem('user', JSON.stringify(freshUser));
-          
-          dispatch({
-            type: 'AUTH_SUCCESS',
-            payload: {
-              user: freshUser,
-              token
-            }
-          });
+          const user = response.data.user;
+          localStorage.setItem('user', JSON.stringify(user));
+          dispatch({ type: 'AUTH_SUCCESS', payload: { user, token } });
         } catch (error) {
-          // Clear invalid data from localStorage
+          // If token is invalid, log the user out
           localStorage.removeItem('token');
           localStorage.removeItem('user');
-          dispatch({
-            type: 'AUTH_FAILURE',
-            payload: 'Session expired. Please login again.'
-          });
+          dispatch({ type: 'AUTH_FAILURE', payload: 'Session expired. Please log in again.' });
         }
       } else {
-        // Clear any stale data
-        localStorage.removeItem('user');
         dispatch({ type: 'AUTH_FAILURE', payload: null });
       }
     };
 
-    checkAuth();
+    validateTokenAndFetchUser();
   }, []);
 
   // Login function

@@ -3,7 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { Shield, Eye, EyeOff, User, Mail, Lock, UserCheck } from 'lucide-react';
 import toast from 'react-hot-toast';
-// import { authAPI } from '../../services/api';
+import { authAPI } from '../../services/api';
 
 const Register = () => {
   const navigate = useNavigate();
@@ -33,6 +33,7 @@ const Register = () => {
         toast.error(response.data.message || 'Registration failed');
       }
     } catch (error) {
+      console.log(error); // Debug: log error to console
       const errorMessage = error.response?.data?.message || 'Registration failed';
       toast.error(errorMessage);
     } finally {
@@ -179,7 +180,6 @@ const Register = () => {
                 } bg-white dark:bg-gray-700 text-gray-900 dark:text-white`}
               >
                 <option value="">Select a role</option>
-                <option value="admin">Admin</option>
                 <option value="baseCommander">Base Commander</option>
                 <option value="logisticsOfficer">Logistics Officer</option>
               </select>

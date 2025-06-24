@@ -1,7 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-// import { useAuth } from '../../contexts/AuthContext';
-// import { useTheme } from '../../contexts/ThemeContext';
+import { useAuth } from '../../contexts/AuthContext';
 import { 
   Menu, 
   Bell, 
@@ -13,8 +12,7 @@ import {
 } from 'lucide-react';
 
 const Header = ({ onMenuClick }) => {
-  // const { user } = useAuth();
-  // const { isDark, toggleTheme } = useTheme();
+  const { user } = useAuth();
   const location = useLocation();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
@@ -66,15 +64,6 @@ const Header = ({ onMenuClick }) => {
 
         {/* Right side */}
         <div className="flex items-center space-x-4">
-          Theme toggle
-          <button
-            onClick={toggleTheme}
-            className="p-2 rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700"
-            title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
-          >
-            {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
-          </button>
-
           {/* Notifications */}
           <button className="p-2 rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700">
             <Bell className="w-5 h-5" />
