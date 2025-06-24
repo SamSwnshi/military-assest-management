@@ -3,6 +3,7 @@ import Purchase from "../models/purchase.js";
 import Transfer from "../models/transfer.js";
 import Assignment from "../models/assignment.js";
 import Expenditure from "../models/expenditure.js";
+import mongoose from "mongoose";
 
 export const getMetrics = async (req, res) => {
   try {
@@ -32,6 +33,35 @@ export const getMetrics = async (req, res) => {
       transferFilter.fromBaseId = baseId;
     }
 
+    // Net Movement Calculation
+    let netMovement = { in: 0, out: 0 };
+    if (baseId) {
+      // Purchases In
+      const purchasesIn = await Purchase.aggregate([
+        { $match: { baseId: typeof baseId === 'string' ? mongoose.Types.ObjectId(baseId) : baseId, status: "delivered" } },
+        { $group: { _id: null, total: { $sum: "$quantity" } } }
+      ]);
+      // Transfers In
+      const transfersIn = await Transfer.aggregate([
+        { $match: { toBaseId: typeof baseId === 'string' ? mongoose.Types.ObjectId(baseId) : baseId, status: "completed" } },
+        { $group: { _id: null, total: { $sum: "$quantity" } } }
+      ]);
+      // Transfers Out
+      const transfersOut = await Transfer.aggregate([
+        { $match: { fromBaseId: typeof baseId === 'string' ? mongoose.Types.ObjectId(baseId) : baseId, status: "completed" } },
+        { $group: { _id: null, total: { $sum: "$quantity" } } }
+      ]);
+
+      // Debug logs
+      console.log('User baseId:', baseId);
+      console.log('Purchases In:', purchasesIn);
+      console.log('Transfers In:', transfersIn);
+      console.log('Transfers Out:', transfersOut);
+
+      netMovement.in = (purchasesIn[0]?.total || 0) + (transfersIn[0]?.total || 0);
+      netMovement.out = transfersOut[0]?.total || 0;
+    }
+
     const [totalAssets, totalPurchases, activeTransfers, totalAssignments, expendedAssets] = await Promise.all([
       Asset.countDocuments(assetFilters),
       Purchase.countDocuments({ ...filters, ...dateFilter }),
@@ -45,7 +75,8 @@ export const getMetrics = async (req, res) => {
       totalPurchases,
       activeTransfers,
       assignedAssets: totalAssignments,
-      expendedAssets
+      expendedAssets,
+      netMovement
     });
   } catch (error) {
     console.error("Error fetching metrics:", error);

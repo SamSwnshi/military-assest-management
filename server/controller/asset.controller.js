@@ -22,7 +22,14 @@ export const getAssetById = async(req , res) =>{
 
 export const createAsset = async(req, res) =>{
     try {
-    const asset = new Asset(req.body);
+    const { quantity, ...rest } = req.body;
+    const numericQuantity = Number(quantity);
+    const asset = new Asset({
+      ...rest,
+      quantity: numericQuantity,
+      closingBalance: numericQuantity,
+      openingBalance: numericQuantity,
+    });
     await asset.save();
     res.status(201).json(asset);
   } catch (error) {
