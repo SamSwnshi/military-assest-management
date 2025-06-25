@@ -6,9 +6,11 @@ import AuditService from "../services/auditService.js";
 
 export const Login = async (req, res) => {
   try {
+    console.log("Login attempt:", req.body); // Log incoming data
     const { username, email, password } = req.body;
 
     if (!(username || email) || !password) {
+      console.log("Login failed: Missing credentials");
       return res.status(400).json({
         message: "Please provide username/email and password",
       });
@@ -17,13 +19,19 @@ export const Login = async (req, res) => {
     const user = await User.findOne({
       $or: [{ email }, { username }],
     });
+    console.log("User found:", user); // Log the found user
+
     if (!user) {
+      console.log("Login failed: User not found");
       return res.status(400).json({
         message: "User not registered",
       });
     }
     const checkPassword = await bcrypt.compare(password, user.password);
+    console.log("Password check result:", checkPassword); // Log password check
+
     if (!checkPassword) {
+      console.log("Login failed: Incorrect password");
       return res.status(400).json({
         message: "Check your password",
       });
@@ -43,6 +51,7 @@ export const Login = async (req, res) => {
       req.get('User-Agent')
     );
 
+    console.log("Login successful for user:", user.username); // Log success
     return res.status(200).json({
       message: "Login successful",
       token, // send token to client
@@ -58,6 +67,7 @@ export const Login = async (req, res) => {
       success: true,
     });
   } catch (error) {
+    console.error("Login error:", error); // Log any unexpected errors
     return res.status(500).json({
       message: error.message || "Internal server error",
       success: false,
