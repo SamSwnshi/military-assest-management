@@ -42,18 +42,12 @@ const NewExpenditure = () => {
         toast.error('Please provide a reason');
         return;
       }
-      if (!user || !user._id) {
-        toast.error('User authentication error');
-        return;
-      }
 
       const expenditureData = { 
         ...data, 
         quantity: parseInt(data.quantity, 10),
-        expendedBy: user._id 
       };
       console.log('Submitting expenditure data:', expenditureData);
-      console.log('User data:', user);
       
       await expendituresAPI.create(expenditureData);
       toast.success('Expenditure recorded successfully');

@@ -20,7 +20,8 @@ export const getExpenditure = async (req, res) => {
 export const createExpenditure = async (req, res) => {
   try {
     console.log('Expenditure creation request body:', req.body);
-    const { assetId, quantity, expendedBy, reason, notes } = req.body;
+    const { assetId, quantity, reason, notes } = req.body;
+    const expendedBy = req.user._id; // Use the authenticated user's ID
 
     // Input validation with detailed error messages
     if (!assetId) {
@@ -28,9 +29,6 @@ export const createExpenditure = async (req, res) => {
     }
     if (!quantity) {
       return res.status(400).json({ message: "Quantity is required" });
-    }
-    if (!expendedBy) {
-      return res.status(400).json({ message: "Expended by user ID is required" });
     }
     if (!reason) {
       return res.status(400).json({ message: "Reason is required" });
@@ -85,7 +83,7 @@ export const createExpenditure = async (req, res) => {
 
     // Log expenditure creation
     await AuditService.logExpenditureAction(
-      req.user._id,
+      expendedBy, // Use the same user ID for the log
       'EXPENDITURE',
       expenditure._id,
       `Expended ${quantityNum} units of ${asset.name}. Reason: ${reason}`,
