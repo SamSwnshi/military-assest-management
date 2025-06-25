@@ -1,24 +1,14 @@
 import React from 'react';
-import { X, TrendingUp, TrendingDown, DollarSign, Calendar, Package } from 'lucide-react';
+import { X, TrendingUp, TrendingDown, DollarSign, Package, Truck } from 'lucide-react';
 
-const NetMovementModal = ({ isOpen, onClose, data }) => {
+const NetMovementModal = ({ isOpen, onClose, data, user }) => {
   if (!isOpen) return null;
 
   const movementData = data || {
-    summary: {
-      totalIn: 0,
-      totalOut: 0,
-      netMovement: 0,
-      period: 'This Month'
-    },
-    purchases: [],
-    transfersIn: [],
-    transfersOut: [],
-    breakdown: {
-      byAssetType: [],
-      byBase: [],
-      byMonth: []
-    }
+    purchases: 0,
+    transfersIn: 0,
+    transfersOut: 0,
+    netMovement: 0
   };
 
   return (
@@ -31,14 +21,14 @@ const NetMovementModal = ({ isOpen, onClose, data }) => {
         ></div>
 
         {/* Modal panel */}
-        <div className="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full">
+        <div className="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full">
           {/* Header */}
           <div className="bg-white dark:bg-gray-800 px-6 py-4 border-b border-gray-200 dark:border-gray-700">
             <div className="flex items-center justify-between">
               <div className="flex items-center">
                 <DollarSign className="w-6 h-6 text-blue-600 dark:text-blue-400 mr-3" />
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                  Net Movement Details
+                  Net Movement Calculation
                 </h3>
               </div>
               <button
@@ -52,198 +42,129 @@ const NetMovementModal = ({ isOpen, onClose, data }) => {
 
           {/* Content */}
           <div className="px-6 py-6">
-            {/* Summary Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-              <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg">
-                <div className="flex items-center">
-                  <TrendingUp className="w-8 h-8 text-green-600 dark:text-green-400 mr-3" />
-                  <div>
-                    <p className="text-sm font-medium text-green-600 dark:text-green-400">
-                      Total In
-                    </p>
-                    <p className="text-2xl font-bold text-green-700 dark:text-green-300">
-                      {movementData.summary.totalIn}
-                    </p>
-                  </div>
+            {!user?.baseId ? (
+              <div className="text-center py-8">
+                <div className="mb-4">
+                  <DollarSign className="w-16 h-16 text-gray-400 mx-auto mb-4" />
                 </div>
-              </div>
-
-              <div className="bg-red-50 dark:bg-red-900/20 p-4 rounded-lg">
-                <div className="flex items-center">
-                  <TrendingDown className="w-8 h-8 text-red-600 dark:text-red-400 mr-3" />
-                  <div>
-                    <p className="text-sm font-medium text-red-600 dark:text-red-400">
-                      Total Out
-                    </p>
-                    <p className="text-2xl font-bold text-red-700 dark:text-red-300">
-                      {movementData.summary.totalOut}
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
-                <div className="flex items-center">
-                  <DollarSign className="w-8 h-8 text-blue-600 dark:text-blue-400 mr-3" />
-                  <div>
-                    <p className="text-sm font-medium text-blue-600 dark:text-blue-400">
-                      Net Movement
-                    </p>
-                    <p className="text-2xl font-bold text-blue-700 dark:text-blue-300">
-                      {movementData.summary.netMovement}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Period Info */}
-            <div className="mb-6">
-              <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
-                <Calendar className="w-4 h-4 mr-2" />
-                Period: {movementData.summary.period}
-              </div>
-            </div>
-
-            {/* Detailed Breakdown */}
-            <div className="space-y-6">
-              {/* Recent Purchases */}
-              <div>
-                <h4 className="text-md font-semibold text-gray-900 dark:text-white mb-3">
-                  Recent Purchases
+                <h4 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                  No Base Assigned
                 </h4>
+                <p className="text-gray-500 dark:text-gray-400 mb-4">
+                  Net movement data is only available for users assigned to a base.
+                </p>
+                <p className="text-sm text-gray-400">
+                  Please contact your administrator to assign you to a base.
+                </p>
+              </div>
+            ) : (
+              <>
+                {/* Formula Display */}
+                <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                  <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Net Movement Formula:
+                  </h4>
+                  <p className="text-lg font-mono text-gray-900 dark:text-white">
+                    Net Movement = Purchases + Transfers In - Transfers Out
+                  </p>
+                </div>
+
+                {/* Summary Cards */}
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                  <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg">
+                    <div className="flex items-center">
+                      <Package className="w-6 h-6 text-green-600 dark:text-green-400 mr-2" />
+                      <div>
+                        <p className="text-xs font-medium text-green-600 dark:text-green-400">
+                          Purchases
+                        </p>
+                        <p className="text-xl font-bold text-green-700 dark:text-green-300">
+                          {movementData.purchases}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
+                    <div className="flex items-center">
+                      <Truck className="w-6 h-6 text-blue-600 dark:text-blue-400 mr-2" />
+                      <div>
+                        <p className="text-xs font-medium text-blue-600 dark:text-blue-400">
+                          Transfers In
+                        </p>
+                        <p className="text-xl font-bold text-blue-700 dark:text-blue-300">
+                          {movementData.transfersIn}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-red-50 dark:bg-red-900/20 p-4 rounded-lg">
+                    <div className="flex items-center">
+                      <TrendingDown className="w-6 h-6 text-red-600 dark:text-red-400 mr-2" />
+                      <div>
+                        <p className="text-xs font-medium text-red-600 dark:text-red-400">
+                          Transfers Out
+                        </p>
+                        <p className="text-xl font-bold text-red-700 dark:text-red-300">
+                          {movementData.transfersOut}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg">
+                    <div className="flex items-center">
+                      <DollarSign className="w-6 h-6 text-purple-600 dark:text-purple-400 mr-2" />
+                      <div>
+                        <p className="text-xs font-medium text-purple-600 dark:text-purple-400">
+                          Net Movement
+                        </p>
+                        <p className={`text-xl font-bold ${
+                          movementData.netMovement >= 0 
+                            ? 'text-purple-700 dark:text-purple-300' 
+                            : 'text-red-700 dark:text-red-300'
+                        }`}>
+                          {movementData.netMovement >= 0 ? '+' : ''}{movementData.netMovement}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Calculation Breakdown */}
                 <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
-                  {movementData.purchases.length > 0 ? (
-                    <div className="space-y-3">
-                      {movementData.purchases.slice(0, 5).map((purchase, index) => (
-                        <div key={index} className="flex items-center justify-between p-3 bg-white dark:bg-gray-600 rounded-lg">
-                          <div className="flex items-center">
-                            <Package className="w-4 h-4 text-green-600 dark:text-green-400 mr-3" />
-                            <div>
-                              <p className="text-sm font-medium text-gray-900 dark:text-white">
-                                {purchase.assetName}
-                              </p>
-                              <p className="text-xs text-gray-600 dark:text-gray-400">
-                                {purchase.base} • {purchase.date}
-                              </p>
-                            </div>
-                          </div>
-                          <span className="text-sm font-semibold text-green-600 dark:text-green-400">
-                            +{purchase.quantity}
-                          </span>
-                        </div>
-                      ))}
+                  <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                    Calculation Breakdown:
+                  </h4>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-gray-600 dark:text-gray-400">Purchases:</span>
+                      <span className="font-medium text-green-600 dark:text-green-400">+{movementData.purchases}</span>
                     </div>
-                  ) : (
-                    <p className="text-gray-500 dark:text-gray-400 text-center py-4">
-                      No recent purchases
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              {/* Recent Transfers */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Transfers In */}
-                <div>
-                  <h4 className="text-md font-semibold text-gray-900 dark:text-white mb-3">
-                    Recent Transfers In
-                  </h4>
-                  <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
-                    {movementData.transfersIn.length > 0 ? (
-                      <div className="space-y-3">
-                        {movementData.transfersIn.slice(0, 3).map((transfer, index) => (
-                          <div key={index} className="flex items-center justify-between p-3 bg-white dark:bg-gray-600 rounded-lg">
-                            <div>
-                              <p className="text-sm font-medium text-gray-900 dark:text-white">
-                                {transfer.assetName}
-                              </p>
-                              <p className="text-xs text-gray-600 dark:text-gray-400">
-                                From: {transfer.fromBase} • {transfer.date}
-                              </p>
-                            </div>
-                            <span className="text-sm font-semibold text-green-600 dark:text-green-400">
-                              +{transfer.quantity}
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <p className="text-gray-500 dark:text-gray-400 text-center py-4">
-                        No transfers in
-                      </p>
-                    )}
-                  </div>
-                </div>
-
-                {/* Transfers Out */}
-                <div>
-                  <h4 className="text-md font-semibold text-gray-900 dark:text-white mb-3">
-                    Recent Transfers Out
-                  </h4>
-                  <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
-                    {movementData.transfersOut.length > 0 ? (
-                      <div className="space-y-3">
-                        {movementData.transfersOut.slice(0, 3).map((transfer, index) => (
-                          <div key={index} className="flex items-center justify-between p-3 bg-white dark:bg-gray-600 rounded-lg">
-                            <div>
-                              <p className="text-sm font-medium text-gray-900 dark:text-white">
-                                {transfer.assetName}
-                              </p>
-                              <p className="text-xs text-gray-600 dark:text-gray-400">
-                                To: {transfer.toBase} • {transfer.date}
-                              </p>
-                            </div>
-                            <span className="text-sm font-semibold text-red-600 dark:text-red-400">
-                              -{transfer.quantity}
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <p className="text-gray-500 dark:text-gray-400 text-center py-4">
-                        No transfers out
-                      </p>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              {/* Breakdown by Asset Type */}
-              {movementData.breakdown.byAssetType.length > 0 && (
-                <div>
-                  <h4 className="text-md font-semibold text-gray-900 dark:text-white mb-3">
-                    Movement by Asset Type
-                  </h4>
-                  <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
-                    <div className="space-y-3">
-                      {movementData.breakdown.byAssetType.map((item, index) => (
-                        <div key={index} className="flex items-center justify-between p-3 bg-white dark:bg-gray-600 rounded-lg">
-                          <span className="text-sm font-medium text-gray-900 dark:text-white">
-                            {item.type}
-                          </span>
-                          <div className="flex items-center space-x-4">
-                            <span className="text-sm text-green-600 dark:text-green-400">
-                              +{item.in}
-                            </span>
-                            <span className="text-sm text-red-600 dark:text-red-400">
-                              -{item.out}
-                            </span>
-                            <span className={`text-sm font-semibold ${
-                              item.net >= 0 
-                                ? 'text-green-600 dark:text-green-400' 
-                                : 'text-red-600 dark:text-red-400'
-                            }`}>
-                              {item.net >= 0 ? '+' : ''}{item.net}
-                            </span>
-                          </div>
-                        </div>
-                      ))}
+                    <div className="flex justify-between">
+                      <span className="text-gray-600 dark:text-gray-400">Transfers In:</span>
+                      <span className="font-medium text-blue-600 dark:text-blue-400">+{movementData.transfersIn}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600 dark:text-gray-400">Transfers Out:</span>
+                      <span className="font-medium text-red-600 dark:text-red-400">-{movementData.transfersOut}</span>
+                    </div>
+                    <hr className="border-gray-300 dark:border-gray-600" />
+                    <div className="flex justify-between font-semibold">
+                      <span className="text-gray-900 dark:text-white">Net Movement:</span>
+                      <span className={`${
+                        movementData.netMovement >= 0 
+                          ? 'text-green-600 dark:text-green-400' 
+                          : 'text-red-600 dark:text-red-400'
+                      }`}>
+                        {movementData.netMovement >= 0 ? '+' : ''}{movementData.netMovement}
+                      </span>
                     </div>
                   </div>
                 </div>
-              )}
-            </div>
+              </>
+            )}
           </div>
 
           {/* Footer */}

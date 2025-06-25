@@ -29,10 +29,38 @@ const NewExpenditure = () => {
   const onSubmit = async (data) => {
     setIsLoading(true);
     try {
-      await expendituresAPI.create({ ...data, expendedBy: user._id });
+      // Validate required fields
+      if (!data.assetId) {
+        toast.error('Please select an asset');
+        return;
+      }
+      if (!data.quantity || data.quantity <= 0) {
+        toast.error('Please enter a valid quantity');
+        return;
+      }
+      if (!data.reason) {
+        toast.error('Please provide a reason');
+        return;
+      }
+      if (!user || !user._id) {
+        toast.error('User authentication error');
+        return;
+      }
+
+      const expenditureData = { 
+        ...data, 
+        quantity: parseInt(data.quantity, 10),
+        expendedBy: user._id 
+      };
+      console.log('Submitting expenditure data:', expenditureData);
+      console.log('User data:', user);
+      
+      await expendituresAPI.create(expenditureData);
       toast.success('Expenditure recorded successfully');
       navigate('/expenditures');
     } catch (error) {
+      console.error('Expenditure creation error:', error);
+      console.error('Error response:', error.response?.data);
       toast.error(error.response?.data?.message || 'Failed to record expenditure');
     } finally {
       setIsLoading(false);

@@ -7,11 +7,13 @@ import { useAuth } from '../../contexts/AuthContext';
 
 const NewTransfer = () => {
   const navigate = useNavigate();
-  const { register, handleSubmit, formState: { errors } } = useForm();
+  const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm();
   const [assets, setAssets] = useState([]);
   const [bases, setBases] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const { user } = useAuth();
+  const selectedAssetId = watch('assetId');
+  const [selectedAsset, setSelectedAsset] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -28,6 +30,22 @@ const NewTransfer = () => {
     };
     fetchData();
   }, []);
+
+  // When asset changes, set the fromBaseId to the asset's baseId
+  useEffect(() => {
+    if (selectedAssetId) {
+      const asset = assets.find(a => a._id === selectedAssetId);
+      setSelectedAsset(asset);
+      if (asset && asset.baseId) {
+        setValue('fromBaseId', asset.baseId._id || asset.baseId); // baseId may be populated or just an id
+      } else {
+        setValue('fromBaseId', '');
+      }
+    } else {
+      setSelectedAsset(null);
+      setValue('fromBaseId', '');
+    }
+  }, [selectedAssetId, assets, setValue]);
 
   const onSubmit = async (data) => {
     setIsLoading(true);
@@ -58,9 +76,18 @@ const NewTransfer = () => {
 
           <div>
             <label className="block text-sm font-medium">From Base</label>
-            <select {...register('fromBaseId', { required: 'Source base is required' })} className="mt-1 block w-full">
+            <input type="hidden" {...register('fromBaseId', { required: 'Source base is required' })} />
+            <select className="mt-1 block w-full" value={selectedAsset && selectedAsset.baseId ? (selectedAsset.baseId._id || selectedAsset.baseId) : ''} disabled>
               <option value="">Select Source Base</option>
-              {bases.map(base => <option key={base._id} value={base._id}>{base.name}</option>)}
+              {selectedAsset && selectedAsset.baseId && (() => {
+                const baseIdValue = selectedAsset.baseId._id || selectedAsset.baseId;
+                const baseObj = bases.find(b => b._id === baseIdValue);
+                return baseObj ? (
+                  <option value={baseObj._id}>{baseObj.name}</option>
+                ) : (
+                  <option value={baseIdValue}>{baseIdValue}</option>
+                );
+              })()}
             </select>
             {errors.fromBaseId && <p className="text-red-500 text-sm">{errors.fromBaseId.message}</p>}
           </div>
@@ -69,7 +96,9 @@ const NewTransfer = () => {
             <label className="block text-sm font-medium">To Base</label>
             <select {...register('toBaseId', { required: 'Destination base is required' })} className="mt-1 block w-full">
               <option value="">Select Destination Base</option>
-              {bases.map(base => <option key={base._id} value={base._id}>{base.name}</option>)}
+              {bases
+                .filter(base => !selectedAsset || (selectedAsset.baseId && (base._id !== (selectedAsset.baseId._id || selectedAsset.baseId))))
+                .map(base => <option key={base._id} value={base._id}>{base.name}</option>)}
             </select>
             {errors.toBaseId && <p className="text-red-500 text-sm">{errors.toBaseId.message}</p>}
           </div>
