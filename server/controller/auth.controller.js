@@ -2,6 +2,7 @@ import User from "../models/user.models.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import Base from "../models/base.models.js";
+import AuditService from "../services/auditService.js";
 
 export const Login = async (req, res) => {
   try {
@@ -35,6 +36,13 @@ export const Login = async (req, res) => {
       process.env.JWT_SECRET,
       { expiresIn: "1d" }
     );
+
+    // Log the login action
+    await AuditService.logLogin(
+      user._id, 
+      req.get('User-Agent')
+    );
+
     return res.status(200).json({
       message: "Login successful",
       token, // send token to client

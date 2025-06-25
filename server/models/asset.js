@@ -17,8 +17,9 @@ const assetSchema = new mongoose.Schema(
       required: [true, "Asset type is required"],
     },
     quantity: {
-      type: String,
+      type: Number,
       required: true,
+      min: [0, "Quantity cannot be negative"]
     },
     baseId: {
       type: mongoose.Schema.Types.ObjectId,

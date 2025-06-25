@@ -11,6 +11,7 @@ import expendituresRoutes from "./routes/expenditure.routes.js"
 import assignmnetRoutes from './routes/assignmnet.routes.js'
 import dashboardRoutes from './routes/dashboard.routes.js'
 import userRoutes from './routes/user.routes.js';
+import auditLogRoutes from './routes/auditlog.routes.js';
 dotenv.config();
 
 const app = express();
@@ -29,6 +30,7 @@ app.use('/api/expenditures',expendituresRoutes)
 app.use("/api/assignments",assignmnetRoutes)
 app.use('/api/dashboard',dashboardRoutes)
 app.use('/api/users', userRoutes);
+app.use('/api/audit-logs', auditLogRoutes);
 
 app.listen(port, () => {
   console.log(`Server is Running in Port: ${port}`);

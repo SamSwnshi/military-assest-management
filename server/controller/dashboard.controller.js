@@ -89,45 +89,114 @@ export const getMetrics = async (req, res) => {
 
 export const getNetMovement = async (req, res) => {
   try {
-    if (!req.user || !req.user.baseId) {
-      return res.status(400).json({
+    console.log('User data in getNetMovement:', req.user);
+    
+    // Check if user exists
+    if (!req.user) {
+      return res.status(401).json({
         success: false,
-        message: "User baseId is missing. Cannot apply base-level filtering.",
+        message: "User not authenticated",
       });
     }
 
     const baseId = req.user.baseId;
+    console.log('User baseId:', baseId);
 
-    // Fetch relevant data
-    const purchases = await Purchase.find({
-      baseId: baseId,
-      status: "delivered",
-    }).populate("assetId", "name type");
+    // If user doesn't have a baseId, return zeros (or handle differently based on role)
+    if (!baseId) {
+      console.log('No baseId found for user, returning zero values');
+      return res.status(200).json({
+        success: true,
+        message: "Net movement calculated successfully (no base assigned)",
+        data: {
+          purchases: 0,
+          transfersIn: 0,
+          transfersOut: 0,
+          netMovement: 0
+        }
+      });
+    }
 
-    const transfersIn = await Transfer.find({
-      toBaseId: baseId,
-      status: "completed",
-    }).populate("assetId", "name type");
+    // Validate baseId is a valid ObjectId
+    let validBaseId;
+    try {
+      validBaseId = typeof baseId === 'string' ? mongoose.Types.ObjectId(baseId) : baseId;
+    } catch (error) {
+      console.error('Invalid baseId format:', baseId);
+      return res.status(400).json({
+        success: false,
+        message: "Invalid base ID format",
+      });
+    }
 
-    const transfersOut = await Transfer.find({
-      fromBaseId: baseId,
-      status: "completed",
-    }).populate("assetId", "name type");
+    // Simple calculation: Purchases + Transfers In - Transfers Out
+    const [purchases, transfersIn, transfersOut] = await Promise.all([
+      // Get total purchases (delivered status)
+      Purchase.aggregate([
+        { 
+          $match: { 
+            baseId: validBaseId, 
+            status: "delivered" 
+          } 
+        },
+        { $group: { _id: null, total: { $sum: "$quantity" } } }
+      ]),
+      
+      // Get total transfers in (completed status)
+      Transfer.aggregate([
+        { 
+          $match: { 
+            toBaseId: validBaseId, 
+            status: "completed" 
+          } 
+        },
+        { $group: { _id: null, total: { $sum: "$quantity" } } }
+      ]),
+      
+      // Get total transfers out (completed status)
+      Transfer.aggregate([
+        { 
+          $match: { 
+            fromBaseId: validBaseId, 
+            status: "completed" 
+          } 
+        },
+        { $group: { _id: null, total: { $sum: "$quantity" } } }
+      ])
+    ]);
+
+    console.log('Aggregation results:', { purchases, transfersIn, transfersOut });
+
+    // Extract totals (default to 0 if no results)
+    const totalPurchases = purchases[0]?.total || 0;
+    const totalTransfersIn = transfersIn[0]?.total || 0;
+    const totalTransfersOut = transfersOut[0]?.total || 0;
+
+    // Calculate net movement: Purchases + Transfers In - Transfers Out
+    const netMovement = totalPurchases + totalTransfersIn - totalTransfersOut;
+
+    console.log('Calculated net movement:', {
+      totalPurchases,
+      totalTransfersIn,
+      totalTransfersOut,
+      netMovement
+    });
 
     res.status(200).json({
       success: true,
-      message: "Net movement data fetched successfully",
+      message: "Net movement calculated successfully",
       data: {
-        purchases,
-        transfersIn,
-        transfersOut,
-      },
+        purchases: totalPurchases,
+        transfersIn: totalTransfersIn,
+        transfersOut: totalTransfersOut,
+        netMovement: netMovement
+      }
     });
   } catch (error) {
-    console.error("Error fetching net movement:", error);
+    console.error("Error calculating net movement:", error);
     res.status(500).json({
       success: false,
-      message: "Internal server error while fetching net movement",
+      message: "Internal server error while calculating net movement",
     });
   }
 };
